@@ -8,6 +8,7 @@ The brand is always written "SarnAI"; code names (package, modules, functions) a
 - One goal per prompt. Do that goal, then report and stop.
 - The user approves every push. Commit locally on a branch; never push without explicit approval.
 - No secrets in chat. Never ask for, print, or commit API keys or tokens; read them from the environment.
+- Give results in copy-paste format: plain text or commands in fenced code blocks.
 
 ## API sources
 
