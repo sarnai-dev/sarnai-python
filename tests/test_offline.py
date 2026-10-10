@@ -68,3 +68,20 @@ def test_langchain_tool_names():
     from sarnai.langchain import tools
 
     assert [t.name for t in tools] == ["find_service", "verify_output"]
+
+
+def test_user_agent_on_every_request():
+    import sarnai
+
+    agents = []
+
+    def handler(request):
+        agents.append(request.headers["user-agent"])
+        return httpx.Response(200, json={"result": "pass"})
+
+    client = make_client(handler)
+    client.search_listings("x")
+    client.get_listing("id")
+    client.verify_output({"type": "object"}, {})
+    client.reputation("agent")
+    assert agents == [f"sarnai-python/{sarnai.__version__}"] * 4

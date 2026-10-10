@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "sarnai"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Official SarnAI Python package: find agent services on the Agent Discovery Board and verify agent output."
 readme = "README.md"
 license = "MIT"
@@ -19,6 +19,9 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Typing :: Typed",
 ]
+
+[tool.hatch.version]
+path = "src/sarnai/_version.py"
 
 [project.optional-dependencies]
 langchain = ["langchain-core>=0.3"]

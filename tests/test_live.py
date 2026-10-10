@@ -45,3 +45,10 @@ def test_tools_end_to_end():
     assert found["listings"]
     res = json.loads(_tools.verify_output(SCHEMA, {"total": 1}))
     assert res["result"] == "pass"
+
+
+def test_compact_detail(client):
+    res = client.verify_output(SCHEMA, {"total": "x"}, agent_id="test-sarnai-python",
+                               compact=True)
+    assert not res.passed and "errors" not in res.raw
+    assert res.attestation["algorithm"] == "Ed25519"

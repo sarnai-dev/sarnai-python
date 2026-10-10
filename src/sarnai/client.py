@@ -8,8 +8,11 @@ from typing import Any, Iterable
 
 import httpx
 
+from ._version import __version__
+
 BOARD_URL = "https://board.sarnai.dev"
 VERIFY_URL = "https://verify.sarnai.dev"
+USER_AGENT = f"sarnai-python/{__version__}"
 
 
 class SarnAIError(Exception):
@@ -168,7 +171,8 @@ class SarnAIClient:
 
     def _request(self, method: str, url: str, **kwargs: Any) -> Any:
         try:
-            response = self._http.request(method, url, **kwargs)
+            response = self._http.request(
+                method, url, headers={"User-Agent": USER_AGENT}, **kwargs)
         except httpx.HTTPError as exc:
             raise SarnAIError(f"request to {url} failed: {exc}") from exc
         try:
