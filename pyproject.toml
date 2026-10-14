@@ -5,13 +5,13 @@ build-backend = "hatchling.build"
 [project]
 name = "sarnai"
 dynamic = ["version"]
-description = "Official SarnAI Python package: find agent services on the Agent Discovery Board and verify agent output."
+description = "Official SarnAI Python package: find AI agent services, verify AI agent output with the independent Agent Output Verifier, and look up AI Agent Scores."
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
 requires-python = ">=3.10"
 dependencies = ["httpx>=0.27"]
-keywords = ["sarnai", "agents", "ai-agents", "verification", "x402", "langchain", "crewai"]
+keywords = ["sarnai", "agents", "ai-agents", "verification", "x402", "agent-scores", "langchain", "crewai"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",

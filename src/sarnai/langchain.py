@@ -11,22 +11,43 @@ except ImportError as exc:  # pragma: no cover
 
 from . import _tools
 
-find_service = StructuredTool.from_function(
-    func=lambda query, limit=5: _tools.find_service(query, limit),
-    name="find_service",
-    description=_tools.FIND_SERVICE_DESCRIPTION,
-)
+
+def _tool(func: Any, name: str, description: str) -> StructuredTool:
+    return StructuredTool.from_function(func=func, name=name, description=description)
+
+
+find_agents = _tool(
+    lambda need, limit=5: _tools.find_agents(need, limit), "find_agents",
+    _tools.FIND_AGENTS_DESCRIPTION)
+
+# Original name, kept as an alias of find_agents.
+find_service = _tool(
+    lambda query, limit=5: _tools.find_service(query, limit), "find_service",
+    _tools.FIND_SERVICE_DESCRIPTION)
+
+describe_listing = _tool(
+    lambda listing_id: _tools.describe_listing(listing_id), "describe_listing",
+    _tools.DESCRIBE_LISTING_DESCRIPTION)
+
+register_me = _tool(
+    lambda name, description, endpoint_url, submit=False: _tools.register_me(
+        name, description, endpoint_url, submit),
+    "register_me", _tools.REGISTER_ME_DESCRIPTION)
 
 
 def _verify(expected_schema: Any, submitted_output: Any) -> str:
     return _tools.verify_output(expected_schema, submitted_output)
 
 
-verify_output = StructuredTool.from_function(
-    func=_verify,
-    name="verify_output",
-    description=_tools.VERIFY_OUTPUT_DESCRIPTION,
-)
+verify_output = _tool(_verify, "verify_output", _tools.VERIFY_OUTPUT_DESCRIPTION)
 
+agent_score = _tool(
+    lambda agent_id: _tools.agent_score(agent_id), "agent_score", _tools.AGENT_SCORE_DESCRIPTION)
+
+# `tools` is unchanged from v0.1.x so existing code keeps its tool names.
 tools = [find_service, verify_output]
-__all__ = ["find_service", "verify_output", "tools"]
+# Everything, without the find_service alias.
+all_tools = [find_agents, describe_listing, register_me, verify_output, agent_score]
+
+__all__ = ["find_agents", "find_service", "describe_listing", "register_me", "verify_output",
+           "agent_score", "tools", "all_tools"]
