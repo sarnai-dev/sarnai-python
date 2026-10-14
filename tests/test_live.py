@@ -42,7 +42,7 @@ def test_tools_end_to_end():
     from sarnai import _tools
 
     found = json.loads(_tools.find_service("verification", 2))
-    assert found["listings"]
+    assert found["result"]["matches"]
     res = json.loads(_tools.verify_output(SCHEMA, {"total": 1}))
     assert res["result"] == "pass"
 
