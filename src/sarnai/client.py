@@ -44,6 +44,28 @@ class SarnAIError(Exception):
         return self._field("guidance")
 
     @property
+    def errors(self) -> list[dict[str, Any]]:
+        """Every problem the service reported, as dicts with field, code, problem and fix.
+
+        The board lists all problems of an invalid listing at once (result.errors, or detail);
+        apply every fix and call again instead of fixing one problem per retry.
+        """
+        return _problems(self.payload)
+
+    @property
+    def codes(self) -> list[str]:
+        """The error code plus every nested problem code, without repeats."""
+        found = [self.code] if self.code else []
+        found += [p["code"] for p in self.errors if p.get("code")]
+        return list(dict.fromkeys(found))
+
+    @property
+    def fix(self) -> str | None:
+        """The service's one-line fix for the whole request, when it gives one."""
+        value = self._field("fix")
+        return value if isinstance(value, str) else None
+
+    @property
     def next_actions(self) -> list[Any]:
         return self._field("next_actions") or []
 
@@ -78,11 +100,17 @@ class PaymentRequiredError(SarnAIError):
 
 
 class EndpointNotAcceptedError(SarnAIError):
-    """endpoint_not_accepted (422): a listing posted without a wallet needs a real https endpoint."""
+    """endpoint_not_accepted: a listing posted without a wallet needs a real https endpoint.
+
+    Raised for the top-level code and when it is nested in an invalid_listing refusal.
+    """
 
 
 class DescriptionNotAcceptedError(SarnAIError):
-    """description_not_accepted (422): a listing posted without a wallet needs a real description."""
+    """description_not_accepted: a listing posted without a wallet needs a real description.
+
+    Raised for the top-level code and when it is nested in an invalid_listing refusal.
+    """
 
 
 class UnclaimedPostingPausedError(SarnAIError):
@@ -148,6 +176,31 @@ class AgentScore:
 
 def _clean(params: dict[str, Any]) -> dict[str, Any]:
     return {k: v for k, v in params.items() if v is not None}
+
+
+def _problem(item: Any) -> dict[str, Any]:
+    """Normalise one reported problem to {field, code, problem, fix} (extra keys kept)."""
+    if not isinstance(item, dict):
+        return {"field": None, "code": None, "problem": str(item), "fix": None}
+    out = dict(item)
+    out["field"] = item.get("field") or item.get("loc") or item.get("path")
+    out["code"] = item.get("code") or item.get("error_code")
+    out["problem"] = (item.get("problem") or item.get("message") or item.get("detail")
+                      or item.get("msg") or item.get("what"))
+    out["fix"] = item.get("fix")
+    return out
+
+
+def _problems(payload: Any) -> list[dict[str, Any]]:
+    """Every problem in an error body: result.errors if present, else a list-valued detail."""
+    if not isinstance(payload, dict):
+        return []
+    result = payload.get("result")
+    for candidate in (result.get("errors") if isinstance(result, dict) else None,
+                      payload.get("detail")):
+        if isinstance(candidate, list) and candidate:
+            return [_problem(item) for item in candidate]
+    return []
 
 
 def _decode_header(value: str | None) -> Any:
@@ -460,7 +513,17 @@ class SarnAIClient:
                 text, status=402, code=code or (info.get("payment_error") or {}).get("error_code"),
                 payload=payload,
                 payment_required=_decode_header(response.headers.get("payment-required")))
-        cls = _ERROR_CLASSES.get(code or "", SarnAIError)
+        problems = _problems(payload)
+        if problems:
+            # Carry every problem in the message, not just the first one.
+            text += " | " + "; ".join(
+                f"{p['field'] + ': ' if p.get('field') else ''}{p.get('problem') or ''}"
+                + (f" (fix: {p['fix']})" if p.get("fix") else "") for p in problems)
+        # A refusal can arrive as invalid_listing with the specific code nested in errors.
+        cls = _ERROR_CLASSES.get(code or "")
+        if cls is None:
+            cls = next((_ERROR_CLASSES[p["code"]] for p in problems
+                        if p.get("code") in _ERROR_CLASSES), SarnAIError)
         raise cls(text, status=response.status_code, code=code, payload=payload)
 
 

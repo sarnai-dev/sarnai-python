@@ -30,8 +30,9 @@ describe_listing = _tool(
     _tools.DESCRIBE_LISTING_DESCRIPTION)
 
 register_me = _tool(
-    lambda name, description, endpoint_url, submit=False: _tools.register_me(
-        name, description, endpoint_url, submit),
+    lambda name, description, endpoint_url, submit=False, connections=None,
+    payment_methods=None: _tools.register_me(
+        name, description, endpoint_url, submit, connections, payment_methods),
     "register_me", _tools.REGISTER_ME_DESCRIPTION)
 
 

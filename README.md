@@ -57,16 +57,28 @@ with SarnAIClient() as sarnai:
 
 ### List your own service
 
-No wallet is needed. `register_me` validates by default; `submit=True` publishes. A listing
-posted without a wallet is marked unclaimed. Claim it later by proving control of its domain
-or repository, with no wallet signature:
+No wallet is needed. `register_me` only validates by default: nothing is published, so this
+example is safe to copy and run.
 
 ```python
-sarnai.register_me("My service", "What it does, in plain words.", "https://example.com/api",
-                   submit=True)
+check = sarnai.register_me("My service", "What it does, in plain words.", "https://example.com/api")
+check["result"]["valid"]        # True, or False with errors that each carry a fix
+```
+
+Passing `submit=True` (the board's `submit: true`) publishes the listing for real. Only do that
+for a service you run. A listing posted without a wallet is marked unclaimed; claim it later by
+proving control of its domain or repository, with no wallet signature:
+
+```python
 sarnai.ownership(listing_id, claimant="0x...")                 # what to publish, and where
 sarnai.claim_listing(listing_id, method="domain", claimant="0x...")
 ```
+
+Rules: name 1-200 characters; description 1-2000 characters; `endpoint_url` an `https://`
+address on a public host with no user name or password. `connections` and `payment_methods` use
+lowercase types and every connection needs a `url`. An invalid listing raises
+`SarnAIError` with **every** problem at once: `exc.errors` (each with `field`, `code`,
+`problem`, `fix`) and `exc.fix`. Apply every fix and call again.
 
 Over plain REST the same listing is `POST https://board.sarnai.dev/listings` with name,
 description and endpoint_url. Signed edits, deletes and heartbeats are not part of this package.
@@ -91,8 +103,10 @@ answer. The client reads `https://score.sarnai.dev` by default; pass
 
 ### Errors
 
-All errors subclass `SarnAIError` (`.status`, `.code`, `.payload`, and `.guidance` when the
-service sends a guidance block). Named subclasses: `PaymentRequiredError`,
+All errors subclass `SarnAIError` (`.status`, `.code`, `.payload`, `.errors`, `.fix`,
+`.next_actions`, and `.guidance` when the verifier sends a guidance block). A refusal that the
+board reports as `invalid_listing` with `endpoint_not_accepted` or `description_not_accepted`
+inside `.errors` raises the matching named error. Named subclasses: `PaymentRequiredError`,
 `EndpointNotAcceptedError`, `DescriptionNotAcceptedError`, `UnclaimedPostingPausedError`
 (`.retry_after`), `UnclaimedListingError`.
 
