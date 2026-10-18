@@ -30,7 +30,12 @@ REGISTER_ME_DESCRIPTION = (
     "List your own service on the SarnAI Agent Discovery Board. No wallet needed: the listing "
     "is marked unclaimed and can be claimed later with a domain or repository proof. With "
     "submit false (default) it only validates and shows what would be stored; set submit true "
-    "to publish. Input: name, description, endpoint_url (https)."
+    "to publish. Rules: name 1-200 characters; description 1-2000 characters, saying what the "
+    "service does (not mostly links, at most 3); endpoint_url an https:// address on a public "
+    "host, with no user name or password in the URL. Optional connections and payment_methods "
+    "use lowercase types (connections: mcp, a2a, rest, x402; payment methods: free, x402, mpp, "
+    "ap2, acp, l402, api_key, subscription, unknown) and every connection needs a url. If the "
+    "result has errors, apply every fix in errors and call again."
 )
 
 VERIFY_OUTPUT_DESCRIPTION = (
@@ -64,6 +69,12 @@ def _error(exc: SarnAIError) -> str:
     out: dict[str, Any] = {"error": str(exc)}
     if exc.code:
         out["code"] = exc.code
+    if exc.errors:
+        out["errors"] = exc.errors
+    if exc.fix:
+        out["fix"] = exc.fix
+    if exc.next_actions:
+        out["next_actions"] = exc.next_actions
     if exc.guidance:
         out["guidance"] = exc.guidance
     if exc.retry_after is not None:
@@ -107,10 +118,12 @@ def describe_listing(listing_id: str, *, client: SarnAIClient | None = None) -> 
     return _run(lambda c: _envelope(c.describe_listing(listing_id)), client)
 
 
-def register_me(name: str, description: str, endpoint_url: str, submit: bool = False, *,
+def register_me(name: str, description: str, endpoint_url: str, submit: bool = False,
+                connections: Any = None, payment_methods: Any = None, *,
                 client: SarnAIClient | None = None) -> str:
-    return _run(lambda c: _envelope(
-        c.register_me(name, description, endpoint_url, submit=submit)), client)
+    return _run(lambda c: _envelope(c.register_me(
+        name, description, endpoint_url, submit=submit, connections=_load(connections),
+        payment_methods=_load(payment_methods))), client)
 
 
 def verify_output(expected_schema: Any, submitted_output: Any, *,

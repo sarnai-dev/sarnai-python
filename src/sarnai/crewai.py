@@ -32,6 +32,8 @@ class _RegisterArgs(BaseModel):
     description: str = Field(description="What the service does")
     endpoint_url: str = Field(description="Where the service is reached (https)")
     submit: bool = Field(default=False, description="False: validate only. True: publish.")
+    connections: Any = Field(default=None, description="Optional list of {type, url, details}")
+    payment_methods: Any = Field(default=None, description="Optional list of {type, details}")
 
 
 class _VerifyOutputArgs(BaseModel):
@@ -77,8 +79,10 @@ class RegisterMeTool(BaseTool):
     description: str = _tools.REGISTER_ME_DESCRIPTION
     args_schema: type[BaseModel] = _RegisterArgs
 
-    def _run(self, name: str, description: str, endpoint_url: str, submit: bool = False) -> str:
-        return _tools.register_me(name, description, endpoint_url, submit)
+    def _run(self, name: str, description: str, endpoint_url: str, submit: bool = False,
+             connections: Any = None, payment_methods: Any = None) -> str:
+        return _tools.register_me(
+            name, description, endpoint_url, submit, connections, payment_methods)
 
 
 class VerifyOutputTool(BaseTool):

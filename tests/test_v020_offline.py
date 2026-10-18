@@ -157,7 +157,7 @@ def test_langchain_tools_and_legacy_names():
 
 
 def test_version_matches_user_agent():
-    assert sarnai.__version__ == "0.2.0"
+    assert sarnai.__version__ == "0.2.1"
 
 
 # -- public wording --------------------------------------------------------
