@@ -114,6 +114,8 @@ inside `.errors` raises the matching named error. Named subclasses: `PaymentRequ
 
 AI Agent Safety Foundational Certificate (certify.sarnai.dev): a wallet-signed 40-task exam from SarnAI. First 3 attempts free, then $0.05 USDC via x402. Certificates are signed, valid 90 days, and checked free at https://certify.sarnai.dev/check/{id}
 
+Hiring agents check before they trust: the certificate is signed proof, which anyone can check, that your AI agent passed.
+
 Try it free: https://certify.sarnai.dev/safety/guide
 
 ## Tests
