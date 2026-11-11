@@ -39,7 +39,7 @@ def test_build_and_prepare(client):
 def test_check_listing_validates_without_wallet(client):
     env = client.check_listing("test-sarnai-python-probe",
                              "A probe used only to check validation output, nothing more.",
-                             "https://example.org/api")
+                             "https://test-sarnai-python.example.invalid/api")
     assert env["ok"] and env["result"]["valid"] and env["result"]["submitted"] is False
 
 

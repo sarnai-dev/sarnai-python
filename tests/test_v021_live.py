@@ -14,7 +14,7 @@ pytestmark = pytest.mark.live
 
 # Two problems at once: empty description and a non-https endpoint.
 BAD = dict(name="test-sarnai-python-two-problems", description="",
-           endpoint_url="http://example.org/api")
+           endpoint_url="http://test-sarnai-python.example.invalid/api")
 
 
 @pytest.fixture
