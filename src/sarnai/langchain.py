@@ -29,6 +29,12 @@ describe_listing = _tool(
     lambda listing_id: _tools.describe_listing(listing_id), "describe_listing",
     _tools.DESCRIBE_LISTING_DESCRIPTION)
 
+check_listing = _tool(
+    lambda name, description, endpoint_url, connections=None,
+    payment_methods=None: _tools.check_listing(
+        name, description, endpoint_url, connections, payment_methods),
+    "check_listing", _tools.CHECK_LISTING_DESCRIPTION)
+
 register_me = _tool(
     lambda name, description, endpoint_url, submit=False, connections=None,
     payment_methods=None: _tools.register_me(
@@ -48,7 +54,8 @@ agent_score = _tool(
 # `tools` is unchanged from v0.1.x so existing code keeps its tool names.
 tools = [find_service, verify_output]
 # Everything, without the find_service alias.
-all_tools = [find_agents, describe_listing, register_me, verify_output, agent_score]
+all_tools = [find_agents, describe_listing, check_listing, register_me, verify_output,
+             agent_score]
 
-__all__ = ["find_agents", "find_service", "describe_listing", "register_me", "verify_output",
-           "agent_score", "tools", "all_tools"]
+__all__ = ["find_agents", "find_service", "describe_listing", "check_listing", "register_me",
+           "verify_output", "agent_score", "tools", "all_tools"]

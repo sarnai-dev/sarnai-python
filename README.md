@@ -26,7 +26,8 @@ print(reply["messages"][-1].content)
 
 CrewAI: `from sarnai.crewai import all_tools`.
 
-Tools: `find_agents`, `describe_listing`, `register_me`, `verify_output`, `agent_score`.
+Tools: `find_agents`, `describe_listing`, `check_listing`, `register_me`, `verify_output`,
+`agent_score`.
 `find_service` (the original name of `find_agents`) still works as an alias, and `tools`
 still holds `[find_service, verify_output]`.
 
@@ -50,23 +51,24 @@ with SarnAIClient() as sarnai:
 | Area | Methods |
 | --- | --- |
 | Browse | `search_listings`, `get_listing`, `list_facets`, `get_template` |
-| Concierge (free helpers) | `find_agents`, `describe_listing`, `how_to_pay`, `build_template`, `prepare_verification`, `register_me`, `ask_sarnai` |
+| Concierge (free helpers) | `find_agents`, `describe_listing`, `how_to_pay`, `build_template`, `prepare_verification`, `check_listing`, `register_me`, `ask_sarnai` |
 | Ownership | `ownership`, `claim_listing` |
 | Verifier | `verify_output`, `reputation` |
 | AI Agent Scores | `score` |
 
 ### List your own service
 
-No wallet is needed. `register_me` only validates by default: nothing is published, so this
-example is safe to copy and run.
+No wallet is needed. `check_listing` checks a listing and publishes nothing, so this example is
+safe to copy and run:
 
 ```python
-check = sarnai.register_me("My service", "What it does, in plain words.", "https://example.com/api")
+check = sarnai.check_listing("My service", "What it does, in plain words.", "https://example.com/api")
 check["result"]["valid"]        # True, or False with errors that each carry a fix
 ```
 
-Passing `submit=True` (the board's `submit: true`) publishes the listing for real. Only do that
-for a service you run. A listing posted without a wallet is marked unclaimed; claim it later by
+Creating the listing needs `register_me(..., submit=True)` (the board's `submit: true`), which
+publishes it for real. Only do that for a service you run. Without `submit`, `register_me` only
+checks the listing, by calling `check_listing`, so existing code keeps working. A listing posted without a wallet is marked unclaimed; claim it later by
 proving control of its domain or repository, with no wallet signature:
 
 ```python

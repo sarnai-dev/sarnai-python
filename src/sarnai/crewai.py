@@ -27,11 +27,19 @@ class _DescribeArgs(BaseModel):
     listing_id: str = Field(description="A listing id, e.g. from find_agents")
 
 
+class _CheckListingArgs(BaseModel):
+    name: str = Field(description="The service's name")
+    description: str = Field(description="What the service does")
+    endpoint_url: str = Field(description="Where the service is reached (https)")
+    connections: Any = Field(default=None, description="Optional list of {type, url, details}")
+    payment_methods: Any = Field(default=None, description="Optional list of {type, details}")
+
+
 class _RegisterArgs(BaseModel):
     name: str = Field(description="The service's name")
     description: str = Field(description="What the service does")
     endpoint_url: str = Field(description="Where the service is reached (https)")
-    submit: bool = Field(default=False, description="False: validate only. True: publish.")
+    submit: bool = Field(default=False, description="False: only check. True: publish.")
     connections: Any = Field(default=None, description="Optional list of {type, url, details}")
     payment_methods: Any = Field(default=None, description="Optional list of {type, details}")
 
@@ -74,6 +82,16 @@ class DescribeListingTool(BaseTool):
         return _tools.describe_listing(listing_id)
 
 
+class CheckListingTool(BaseTool):
+    name: str = "check_listing"
+    description: str = _tools.CHECK_LISTING_DESCRIPTION
+    args_schema: type[BaseModel] = _CheckListingArgs
+
+    def _run(self, name: str, description: str, endpoint_url: str, connections: Any = None,
+             payment_methods: Any = None) -> str:
+        return _tools.check_listing(name, description, endpoint_url, connections, payment_methods)
+
+
 class RegisterMeTool(BaseTool):
     name: str = "register_me"
     description: str = _tools.REGISTER_ME_DESCRIPTION
@@ -106,6 +124,7 @@ class AgentScoreTool(BaseTool):
 find_agents = FindAgentsTool()
 find_service = FindServiceTool()
 describe_listing = DescribeListingTool()
+check_listing = CheckListingTool()
 register_me = RegisterMeTool()
 verify_output = VerifyOutputTool()
 agent_score = AgentScoreTool()
@@ -113,9 +132,10 @@ agent_score = AgentScoreTool()
 # `tools` is unchanged from v0.1.x so existing code keeps its tool names.
 tools = [find_service, verify_output]
 # Everything, without the find_service alias.
-all_tools = [find_agents, describe_listing, register_me, verify_output, agent_score]
+all_tools = [find_agents, describe_listing, check_listing, register_me, verify_output,
+             agent_score]
 
-__all__ = ["FindAgentsTool", "FindServiceTool", "DescribeListingTool", "RegisterMeTool",
-           "VerifyOutputTool", "AgentScoreTool", "find_agents", "find_service",
-           "describe_listing", "register_me", "verify_output", "agent_score", "tools",
-           "all_tools"]
+__all__ = ["FindAgentsTool", "FindServiceTool", "DescribeListingTool", "CheckListingTool",
+           "RegisterMeTool", "VerifyOutputTool", "AgentScoreTool", "find_agents", "find_service",
+           "describe_listing", "check_listing", "register_me", "verify_output", "agent_score",
+           "tools", "all_tools"]
