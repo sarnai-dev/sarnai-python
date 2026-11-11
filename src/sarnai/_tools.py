@@ -26,16 +26,30 @@ DESCRIBE_LISTING_DESCRIPTION = (
     "trust signals and warnings. Never pays or signs."
 )
 
+_LISTING_RULES = (
+    "Rules: name 1-200 characters; description 1-2000 characters, saying what the service does "
+    "(not mostly links, at most 3); endpoint_url an https:// address on a public host, with no "
+    "user name or password in the URL. Optional connections and payment_methods use lowercase "
+    "types (connections: mcp, a2a, rest, x402; payment methods: free, x402, mpp, ap2, acp, "
+    "l402, api_key, subscription, unknown) and every connection needs a url. "
+)
+
+CHECK_LISTING_DESCRIPTION = (
+    "Check a listing for the SarnAI Agent Discovery Board without creating it. Read-only: "
+    "nothing is published. No wallet needed. Returns what would be stored and what is missing, "
+    "or errors with a fix for every problem. Input: name, description, endpoint_url. "
+    + _LISTING_RULES
+    + "If the result has errors, apply every fix in errors and call again. To publish, call "
+    "register_me with submit true."
+)
+
 REGISTER_ME_DESCRIPTION = (
-    "List your own service on the SarnAI Agent Discovery Board. No wallet needed: the listing "
-    "is marked unclaimed and can be claimed later with a domain or repository proof. With "
-    "submit false (default) it only validates and shows what would be stored; set submit true "
-    "to publish. Rules: name 1-200 characters; description 1-2000 characters, saying what the "
-    "service does (not mostly links, at most 3); endpoint_url an https:// address on a public "
-    "host, with no user name or password in the URL. Optional connections and payment_methods "
-    "use lowercase types (connections: mcp, a2a, rest, x402; payment methods: free, x402, mpp, "
-    "ap2, acp, l402, api_key, subscription, unknown) and every connection needs a url. If the "
-    "result has errors, apply every fix in errors and call again."
+    "List your own service on the SarnAI Agent Discovery Board. Creating needs submit true: "
+    "only then is the listing published (live at once, marked unclaimed, claimable later with a "
+    "domain or repository proof; no wallet needed). Without submit it only checks the listing, "
+    "like check_listing, and publishes nothing. "
+    + _LISTING_RULES
+    + "If the result has errors, apply every fix in errors and call again."
 )
 
 VERIFY_OUTPUT_DESCRIPTION = (
@@ -118,9 +132,18 @@ def describe_listing(listing_id: str, *, client: SarnAIClient | None = None) -> 
     return _run(lambda c: _envelope(c.describe_listing(listing_id)), client)
 
 
+def check_listing(name: str, description: str, endpoint_url: str,
+                  connections: Any = None, payment_methods: Any = None, *,
+                  client: SarnAIClient | None = None) -> str:
+    return _run(lambda c: _envelope(c.check_listing(
+        name, description, endpoint_url, connections=_load(connections),
+        payment_methods=_load(payment_methods))), client)
+
+
 def register_me(name: str, description: str, endpoint_url: str, submit: bool = False,
                 connections: Any = None, payment_methods: Any = None, *,
                 client: SarnAIClient | None = None) -> str:
+    """Publishes only with submit=True; otherwise it checks the listing (check_listing)."""
     return _run(lambda c: _envelope(c.register_me(
         name, description, endpoint_url, submit=submit, connections=_load(connections),
         payment_methods=_load(payment_methods))), client)

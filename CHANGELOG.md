@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.2
+
+- New `check_listing(...)` (POST /concierge/check_listing): checks a listing without creating
+  it, with the same fields as `register_me`. Read-only. For board 0.4.45 and later.
+- `register_me(submit=False)` now calls `check_listing`, so existing code that validated with
+  `register_me` keeps working. `register_me(submit=True)` is unchanged and still creates the
+  listing. Creating needs `submit=True`.
+- LangChain and CrewAI: new `check_listing` tool (also in `all_tools`). The `register_me` tool
+  only creates a listing with `submit` true; without it, it checks. Tool descriptions say so.
+- README: the example uses `check_listing`.
+
 ## 0.2.1
 
 - `SarnAIError.errors` lists every problem the service reports, each with `field`, `code`,

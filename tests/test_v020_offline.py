@@ -117,7 +117,7 @@ def test_concierge_routes_and_register_me_without_wallet():
     c.ask_sarnai("what does it cost", product="verifier")
     assert [r.url.path for r in seen] == [
         f"/concierge/{t}" for t in ("find_agents", "describe_listing", "how_to_pay",
-                                    "build_template", "prepare_verification", "register_me",
+                                    "build_template", "prepare_verification", "check_listing",
                                     "register_me", "ask_sarnai")]
     assert json.loads(seen[0].content) == {
         "need": "web search", "exclude_payment_type": ["x402"], "limit": 2}
@@ -152,12 +152,13 @@ def test_langchain_tools_and_legacy_names():
 
     assert [t.name for t in lc.tools] == ["find_service", "verify_output"]
     assert [t.name for t in lc.all_tools] == [
-        "find_agents", "describe_listing", "register_me", "verify_output", "agent_score"]
+        "find_agents", "describe_listing", "check_listing", "register_me", "verify_output",
+        "agent_score"]
     assert lc.find_service.name == "find_service"
 
 
 def test_version_matches_user_agent():
-    assert sarnai.__version__ == "0.2.1"
+    assert sarnai.__version__ == "0.2.2"
 
 
 # -- public wording --------------------------------------------------------

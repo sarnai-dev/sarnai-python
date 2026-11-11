@@ -114,10 +114,14 @@ def test_register_me_description_states_limits_and_rules():
 
 def test_readme_register_me_example_cannot_publish():
     readme = (Path(__file__).resolve().parent.parent / "README.md").read_text()
-    for block in re.findall(r"```python\n(.*?)```", readme, flags=re.S):
-        if "register_me" in block:
+    blocks = re.findall(r"```python\n(.*?)```", readme, flags=re.S)
+    assert any("check_listing(" in b for b in blocks)   # the copyable example only checks
+    for block in blocks:
+        if "register_me" in block or "check_listing" in block:
             assert "submit=True" not in block
-    assert "publishes the listing for real" in " ".join(readme.split())
+    flat = " ".join(readme.split())
+    assert "Creating the listing needs `register_me(..., submit=True)`" in flat
+    assert "publishes it for real" in flat
 
 
 def test_changelog_has_current_version():

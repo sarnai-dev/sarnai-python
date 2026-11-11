@@ -358,6 +358,31 @@ class SarnAIClient:
         args["submitted_output"] = submitted_output
         return self._concierge("prepare_verification", args)
 
+    def check_listing(
+        self,
+        name: str,
+        description: str,
+        endpoint_url: str,
+        *,
+        submitted_by: str | None = None,
+        connections: list[dict[str, Any]] | None = None,
+        payment_methods: list[dict[str, Any]] | None = None,
+        samples: list[Any] | None = None,
+    ) -> dict[str, Any]:
+        """Check a listing without creating it (POST /concierge/check_listing). Read-only.
+
+        Takes the same fields as register_me and answers with errors and a fix for every
+        problem, what would be stored and what is missing. Nothing is ever published. An
+        invalid listing raises SarnAIError with every problem in `.errors`; apply every fix and
+        call again. Posting rules for a listing without a wallet can raise
+        EndpointNotAcceptedError or DescriptionNotAcceptedError.
+        """
+        return self._concierge("check_listing", {
+            "name": name, "description": description, "endpoint_url": endpoint_url,
+            "submitted_by": submitted_by, "connections": connections,
+            "payment_methods": payment_methods, "samples": samples,
+        })
+
     def register_me(
         self,
         name: str,
@@ -373,15 +398,19 @@ class SarnAIClient:
         """List your own service. No wallet needed: leave `submitted_by` out and the listing
         goes live marked unclaimed (claim it later with claim_listing).
 
-        By default only validates and prepares (errors with fixes, what would be stored).
-        Pass submit=True to create the listing. Posting without a wallet can raise
-        EndpointNotAcceptedError, DescriptionNotAcceptedError or UnclaimedPostingPausedError.
+        Creating needs submit=True. Without it this only checks the listing, by calling
+        check_listing, so existing code that validated with register_me keeps working and
+        nothing is published. Posting without a wallet can raise EndpointNotAcceptedError,
+        DescriptionNotAcceptedError or UnclaimedPostingPausedError.
         """
+        if not submit:
+            return self.check_listing(
+                name, description, endpoint_url, submitted_by=submitted_by,
+                connections=connections, payment_methods=payment_methods, samples=samples)
         return self._concierge("register_me", {
             "name": name, "description": description, "endpoint_url": endpoint_url,
             "submitted_by": submitted_by, "connections": connections,
-            "payment_methods": payment_methods, "samples": samples,
-            "submit": True if submit else None,
+            "payment_methods": payment_methods, "samples": samples, "submit": True,
         })
 
     def ask_sarnai(self, question: str, *, product: str | None = None,
